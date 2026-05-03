@@ -3,6 +3,26 @@ import { useLang } from '../context/LangContext';
 import { useCart } from '../context/CartContext';
 import useReveal from '../hooks/useReveal';
 
+function buildWhatsAppLink(cart) {
+  const phone = '918618882449';
+  let msg;
+  if (cart.count === 0) {
+    msg = "Hi MealBox Bengaluru! I'd like to place an order 🛵";
+  } else {
+    const lines = cart.items.map(i => `${i.emoji} ${i.name} ×${i.qty} — ₹${i.price * i.qty}`);
+    msg = [
+      "Hi MealBox Bengaluru! I'd like to place this order 🛵",
+      '',
+      ...lines,
+      '',
+      `*Total: ₹${cart.total}*`,
+      '',
+      'Please confirm my order. Thank you!',
+    ].join('\n');
+  }
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+}
+
 export default function Order({ onToast, onOrderSuccess }) {
   const { t } = useLang();
   const { cart } = useCart();
@@ -93,7 +113,28 @@ export default function Order({ onToast, onOrderSuccess }) {
             <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>💬</div>
             <div className="b2b-form-title">{t['wa_title']}</div>
             <div className="b2b-form-sub">{t['wa_sub']}</div>
-            <a href="https://wa.me/918618882449?text=Hi%20MealBox%20Bengaluru!%20I'd%20like%20to%20place%20an%20order%20🛵"
+
+            {cart.count === 0 ? (
+              <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px 16px', marginBottom: 16, fontSize: '0.85rem', color: 'var(--muted)' }}>
+                No items in cart yet — add dishes from the menu above first.
+              </div>
+            ) : (
+              <div style={{ background: 'var(--raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px 16px', marginBottom: 16, textAlign: 'left' }}>
+                <div style={{ fontWeight: 700, color: 'var(--white)', marginBottom: 8, fontSize: '0.88rem' }}>Your order:</div>
+                {cart.items.map(item => (
+                  <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: 'var(--text)', padding: '3px 0' }}>
+                    <span>{item.emoji} {item.name} ×{item.qty}</span>
+                    <span style={{ color: 'var(--saffron)', fontFamily: "'Space Mono',monospace" }}>₹{item.price * item.qty}</span>
+                  </div>
+                ))}
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: 8, paddingTop: 8, display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '0.88rem' }}>
+                  <span style={{ color: 'var(--white)' }}>Total</span>
+                  <span style={{ color: 'var(--saffron)', fontFamily: "'Space Mono',monospace" }}>₹{cart.total}</span>
+                </div>
+              </div>
+            )}
+
+            <a href={buildWhatsAppLink(cart)}
               target="_blank" rel="noopener noreferrer"
               className="btn btn-primary btn-lg"
               style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg,#25D366,#128C7E)', borderColor: '#25D366' }}>
